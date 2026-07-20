@@ -1,7 +1,7 @@
-NAME = philosophers
+NAME = philo
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror -pthread -g
 
 SRC = checks.c ft_utils.c init.c print.c threading.c actions.c \
       destroy.c get_time.c main.c valid.c

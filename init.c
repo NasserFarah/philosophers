@@ -1,54 +1,58 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: fnasser <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/07/14 13:24:33 by fnasser           #+#    #+#             */
+/*   Updated: 2026/07/14 13:24:35 by fnasser          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "spoons.h"
 
-void	exit_program(t_shared *shared)
+void	one_p(t_ph **ph, t_shared *shared, char **av, int f)
 {
-	free(shared->forks);
-	free(shared->filos);
-	exit(1);
+	(*ph)[f].phid = f + 1;
+	(*ph)[f].eating_stts = 0;
+	(*ph)[f].mealsconsumed = 0;
+	(*ph)[f].nb_filos = ft_atoi(av[1]);
+	(*ph)[f].t_die = ft_atoi(av[2]);
+	(*ph)[f].t_eat = ft_atoi(av[3]);
+	(*ph)[f].t_sleep = ft_atoi(av[4]);
+	(*ph)[f].t_init = get_time_real(shared);
+	(*ph)[f].last_meal = (*ph)[f].t_init;
+	(*ph)[f].dead = &shared->dead;
+	(*ph)[f].left = &shared->forks[f];
+	if (f == 0)
+		(*ph)[f].right = &shared->forks[(*ph)[f].nb_filos - 1];
+	else
+		(*ph)[f].right = &shared->forks[f - 1];
+	(*ph)[f].w = &shared->w;
+	(*ph)[f].dead = &shared->dead;
+	(*ph)[f].meal = &shared->meal;
+	(*ph)[f].status = &shared->alive;
 }
 
-ssize_t	get_time_real(t_shared* shared)
-{
-	struct timeval	t;
-
-	if ((gettimeofday(&t, NULL)) == 0)
-		return (t.tv_sec * 1000 + t.tv_usec / 1000);
-	return (exit_program(shared), 0);
-}
-
-void	init(t_ph **ph,t_shared *shared, int ac, char **av)
+// parses and inits the t_ph struct and t_shared
+void	init(t_ph **ph, t_shared *shared, int ac, char **av)
 {
 	int	f;
+	int	n;
 
 	f = 0;
-	*ph = malloc((ac - 1) * sizeof(t_ph));
+	n = ft_atoi(av[1]);
+	*ph = malloc((n) * sizeof(t_ph));
 	if (!*ph)
 		exit(EXIT_FAILURE);
-	while (f < ac - 1)
+	while (f < n)
 	{
-		(*ph)[f].phid = f + 1;
-		(*ph)[f].eating_stts = 0;
-		(*ph)[f].mealsconsumed = 0;
-		(*ph)[f].nb_filos = ft_atoi(av[1]);
-		(*ph)[f].t_die = ft_atoi(av[2]);
-		(*ph)[f].t_eat = ft_atoi(av[3]);
-		(*ph)[f].t_sleep = ft_atoi(av[4]);
 		if (ac == 6)
 			(*ph)[f].nb_meals = ft_atoi(av[5]);
 		else
 			(*ph)[f].nb_meals = -3;
-		(*ph)[f].t_init = get_time_real(shared);
-		(*ph)[f].last_meal = (*ph)[f].t_init;
-		(*ph)[f].dead = &shared->dead;
-		(*ph)[f].left = &shared->forks[f];
-		if (f == 0)
-			(*ph)[f].right = &shared->forks[(*ph)[f].nb_filos - 1];
-		else
-			(*ph)[f].right = &shared->forks[f - 1];
-		(*ph)[f].w = &shared->w;
-		(*ph)[f].dead = &shared->dead;
-		(*ph)[f].meal = &shared->meal;
-		(*ph)[f].status = &shared->alive;
+		one_p(ph, shared, av, f);
 		f++;
 	}
 	shared->alive = 0;
@@ -58,6 +62,7 @@ void	init(t_ph **ph,t_shared *shared, int ac, char **av)
 	pthread_mutex_init(&shared->dead, NULL);
 }
 
+// initializes the forks mutex array
 int	init_fork_mtx(t_shared *shared, int nb_filos)
 {
 	int	f;
